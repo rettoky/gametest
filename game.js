@@ -2,37 +2,86 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-// Set canvas dimensions (for testing, set to fixed size, can be dynamic later)
+// Set canvas dimensions
 canvas.width = 800;
 canvas.height = 600;
 
 // Define constants and variables
 const FLOOR_HEIGHT = 50;
 const GAME_SPEED = 2;
+const PLAYER_SPEED = 5;
+const JUMP_FORCE = 15;
+const GRAVITY = 0.7;
 const COLORS = {
     BROWN_FLOOR: '#8B4513',
     BLACK: '#000000'
 };
 
-// Initialize player (basic object for now)
+// Load the player image
+const playerImage = new Image();
+playerImage.src = 'path/to/player-image.png';  // Replace with your image path
+
+// Initialize player with basic physics
 const player = {
     x: 100,
-    y: canvas.height - FLOOR_HEIGHT - 50, // Starting above the floor
+    y: canvas.height - FLOOR_HEIGHT - 100,
     width: 50,
     height: 50,
+    velocityY: 0, // vertical speed for jumping
+    isJumping: false,
+    isOnGround: false,
     draw: function() {
-        ctx.fillStyle = '#00FF00'; // Green color for the player
-        ctx.fillRect(this.x, this.y, this.width, this.height);
+        ctx.drawImage(playerImage, this.x, this.y, this.width, this.height); // Draw player as an image
     },
     update: function() {
-        // Basic gravity simulation (player falls down to the floor)
-        if (this.y + this.height < canvas.height - FLOOR_HEIGHT) {
-            this.y += 5; // Fall speed
+        // Apply gravity
+        this.y += this.velocityY;
+        this.velocityY += GRAVITY;
+
+        // Prevent falling below the floor
+        if (this.y + this.height > canvas.height - FLOOR_HEIGHT) {
+            this.y = canvas.height - FLOOR_HEIGHT - this.height;
+            this.isOnGround = true;
+            this.isJumping = false;
+        } else {
+            this.isOnGround = false;
         }
     }
 };
 
-// Enemy class (placeholder for testing)
+// Initialize control variables for movement
+let keys = {
+    ArrowLeft: false,
+    ArrowRight: false,
+    Space: false
+};
+
+// Listen for key presses
+window.addEventListener('keydown', function(e) {
+    keys[e.code] = true;
+});
+
+window.addEventListener('keyup', function(e) {
+    keys[e.code] = false;
+});
+
+// Handle player movement
+function handlePlayerMovement() {
+    if (keys.ArrowLeft) {
+        player.x -= PLAYER_SPEED; // Move left
+        if (player.x < 0) player.x = 0; // Prevent moving out of bounds
+    }
+    if (keys.ArrowRight) {
+        player.x += PLAYER_SPEED; // Move right
+        if (player.x + player.width > canvas.width) player.x = canvas.width - player.width; // Prevent moving out of bounds
+    }
+    if (keys.Space && !player.isJumping) {
+        player.velocityY = -JUMP_FORCE; // Jump
+        player.isJumping = true;
+    }
+}
+
+// Enemy class
 class Enemy {
     constructor() {
         this.width = 30;
@@ -48,12 +97,6 @@ class Enemy {
         this.x -= GAME_SPEED; // Move enemies to the left
     }
 }
-
-// Initialize variables
-let enemies = [];
-let candies = [];
-let gameOver = false;
-let score = 0;
 
 // Candy class
 class Candy {
@@ -72,6 +115,12 @@ class Candy {
         this.x -= GAME_SPEED; // Move candy to the left
     }
 }
+
+// Initialize variables
+let enemies = [];
+let candies = [];
+let gameOver = false;
+let score = 0;
 
 // Collision detection (basic AABB)
 function collisionDetection(rect1, rect2) {
@@ -92,8 +141,9 @@ function gameLoop() {
         ctx.fillRect(0, canvas.height - FLOOR_HEIGHT, canvas.width, FLOOR_HEIGHT);
 
         // Draw and update player
-        player.draw();
+        handlePlayerMovement();
         player.update();
+        player.draw();
 
         // Draw and update enemies
         enemies.forEach((enemy, index) => {
