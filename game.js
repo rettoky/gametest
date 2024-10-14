@@ -1,3 +1,11 @@
+// Initialize the canvas and its context
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+// Set canvas dimensions to fill the screen
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
 // Candy class
 class Candy {
     constructor() {
@@ -83,3 +91,8 @@ setInterval(() => {
         candies.push(new Candy());
     }
 }, 2000); // Change this interval as needed
+
+// Start the game loop after the window loads
+window.onload = () => {
+    gameLoop();
+};
