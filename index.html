@@ -21,21 +21,54 @@
             left: 50%;
             transform: translateX(-50%);
             display: flex;
-            gap: 10px;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .joystick {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            background-color: #444;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .joystick-inner {
+            width: 40px;
+            height: 40px;
+            background-color: #888;
+            border-radius: 50%;
+            position: absolute;
         }
 
         .button {
             background-color: #555;
             color: white;
             padding: 15px;
-            font-size: 16px;
+            font-size: 18px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
         }
 
-        .button:active {
-            background-color: #333;
+        #jumpButton {
+            font-size: 22px;
+            padding: 20px;
+            background-color: #f76c6c;
+        }
+
+        #restartButton, #speedButton {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            margin-left: 10px;
+        }
+
+        #restartButton {
+            top: 70px;
         }
 
         .game-over, .victory {
@@ -52,15 +85,16 @@
 <body>
     <canvas id="gameCanvas"></canvas>
     <div class="game-over" id="gameOverMessage" style="display: none;">Game Over! Press Restart.</div>
+    
     <div class="controls">
-        <button class="button" id="leftButton">←</button>
-        <button class="button" id="upButton">↑</button>
-        <button class="button" id="downButton">↓</button>
-        <button class="button" id="rightButton">→</button>
+        <div class="joystick" id="joystick">
+            <div class="joystick-inner" id="joystickInner"></div>
+        </div>
         <button class="button" id="jumpButton">Jump</button>
-        <button class="button" id="restartButton">Restart</button>
-        <button class="button" id="speedButton">Speed +</button>
     </div>
+
+    <button class="button" id="restartButton">Restart</button>
+    <button class="button" id="speedButton">Speed +</button>
 
     <script src="game.js"></script>
 </body>

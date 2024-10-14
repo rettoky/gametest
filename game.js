@@ -7,18 +7,21 @@ canvas.height = 400;
 const FLOOR_HEIGHT = 50;
 const GRAVITY = 0.5;
 const PLAYER_JUMP_VELOCITY = -12;
-let GAME_SPEED = 5;
+let GAME_SPEED = 3; // Start with slower speed
+const SPEED_INCREMENT = 0.2; // Gradual speed increase
 const COLORS = {
     BLUE_SKY: '#87CEEB',
     BROWN_FLOOR: '#8B4513',
     BLACK: '#000000',
-    WHEEL_COLOR: '#333333'  // Color for car wheels
+    WHEEL_COLOR: '#333333',
+    CANDY_COLOR: '#FFD700'
 };
 const CAR_BODY_COLORS = ['#FF6347', '#FFD700', '#ADFF2F', '#FF69B4', '#1E90FF', '#8A2BE2', '#00CED1']; // Car body colors
 
 // Variables
 let player = null;
 let enemies = [];
+let candies = [];
 let gameOver = false;
 let score = 0;
 let jumpCount = 0;
@@ -82,6 +85,26 @@ class Player {
 
     moveDown() {
         this.y = Math.min(canvas.height - FLOOR_HEIGHT - this.height, this.y + this.speed);
+    }
+}
+
+// Candy class
+class Candy {
+    constructor() {
+        this.width = 20;
+        this.height = 20;
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * (canvas.height - FLOOR_HEIGHT - 50);
+        this.color = COLORS.CANDY_COLOR;
+    }
+
+    draw() {
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.x, this.y, this.width, this.height);
+    }
+
+    update() {
+        this.x -= GAME_SPEED;
     }
 }
 
@@ -150,6 +173,21 @@ function gameLoop() {
         // Move enemies off-screen and reset when needed
         enemies = enemies.filter(enemy => enemy.x + enemy.width > 0);
 
+        // Draw and update candies
+        candies.forEach(candy => {
+            candy.draw();
+            candy.update();
+
+            // Check if player collects candy
+            if (collisionDetection(player, candy)) {
+                score += 10;
+                candies = candies.filter(c => c !== candy); // Remove collected candy
+            }
+        });
+
+        // Move candies off-screen and reset when needed
+        candies = candies.filter(candy => candy.x + candy.width > 0);
+
         // Draw score
         ctx.fillStyle = COLORS.BLACK;
         ctx.font = '20px Arial';
@@ -173,13 +211,14 @@ function resetGame() {
     score = 0;
     player = new Player();
     enemies = [];
+    candies = [];
     document.getElementById('gameOverMessage').style.display = 'none';
     gameLoop();
 }
 
 // Increase game speed
 function increaseSpeed() {
-    GAME_SPEED += 1;
+    GAME_SPEED += SPEED_INCREMENT;
 }
 
 // Start game
@@ -187,16 +226,51 @@ player = new Player();
 setInterval(() => {
     if (!gameOver) {
         enemies.push(new Enemy());
+        candies.push(new Candy()); // Add candy occasionally
     }
-}, 1500); // Spawn enemies every 1.5 seconds
+}, 1500); // Spawn enemies and candies every 1.5 seconds
 
 // Button event listeners
-document.getElementById('leftButton').addEventListener('click', () => player.moveLeft());
-document.getElementById('rightButton').addEventListener('click', () => player.moveRight());
-document.getElementById('upButton').addEventListener('click', () => player.moveUp());
-document.getElementById('downButton').addEventListener('click', () => player.moveDown());
 document.getElementById('jumpButton').addEventListener('click', () => player.jump());
 document.getElementById('restartButton').addEventListener('click', resetGame);
 document.getElementById('speedButton').addEventListener('click', increaseSpeed);
+
+// Joystick event listeners
+const joystick = document.getElementById('joystick');
+const joystickInner = document.getElementById('joystickInner');
+let joystickActive = false;
+
+joystick.addEventListener('touchstart', (event) => {
+    joystickActive = true;
+});
+
+joystick.addEventListener('touchmove', (event) => {
+    if (joystickActive) {
+        const touch = event.touches[0];
+        const joystickRect = joystick.getBoundingClientRect();
+        const offsetX = touch.clientX - joystickRect.left - joystickRect.width / 2;
+        const offsetY = touch.clientY - joystickRect.top - joystickRect.height / 2;
+
+        if (Math.abs(offsetX) > 20) {
+            if (offsetX < 0) {
+                player.moveLeft();
+            } else {
+                player.moveRight();
+            }
+        }
+
+        if (Math.abs(offsetY) > 20) {
+            if (offsetY < 0) {
+                player.moveUp();
+            } else {
+                player.moveDown();
+            }
+        }
+    }
+});
+
+joystick.addEventListener('touchend', () => {
+    joystickActive = false;
+});
 
 gameLoop();
