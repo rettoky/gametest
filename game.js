@@ -11,8 +11,10 @@ const GAME_SPEED = 5;
 const COLORS = {
     BLUE_SKY: '#87CEEB',
     BROWN_FLOOR: '#8B4513',
-    BLACK: '#000000'
+    BLACK: '#000000',
+    WHEEL_COLOR: '#333333'  // Color for car wheels
 };
+const CAR_BODY_COLORS = ['#FF6347', '#FFD700', '#ADFF2F', '#FF69B4', '#1E90FF', '#8A2BE2', '#00CED1']; // Car body colors
 
 // Variables
 let player = null;
@@ -20,6 +22,7 @@ let enemies = [];
 let gameOver = false;
 let score = 0;
 let jumpCount = 0;
+let keysPressed = {};
 
 // Load character image
 const playerImage = new Image();
@@ -33,6 +36,7 @@ class Player {
         this.x = 50;
         this.y = canvas.height - FLOOR_HEIGHT - this.height;
         this.dy = 0;
+        this.speed = 5; // Speed for moving left and right
     }
 
     draw() {
@@ -49,6 +53,15 @@ class Player {
         this.dy += GRAVITY;
         this.y += this.dy;
 
+        // Movement logic for left and right
+        if (keysPressed['ArrowLeft'] && this.x > 0) {
+            this.x -= this.speed;
+        }
+        if (keysPressed['ArrowRight'] && this.x < canvas.width - this.width) {
+            this.x += this.speed;
+        }
+
+        // Prevent player from falling below the floor
         if (this.y + this.height >= canvas.height - FLOOR_HEIGHT) {
             this.y = canvas.height - FLOOR_HEIGHT - this.height;
             this.dy = 0;
@@ -64,17 +77,34 @@ class Player {
     }
 }
 
+// Car-shaped enemy class
 class Enemy {
     constructor() {
-        this.width = 30;
-        this.height = 30;
+        this.width = 60;  // Car body width
+        this.height = 30; // Car body height
+        this.wheelRadius = 10; // Wheel radius
         this.x = canvas.width;
-        this.y = canvas.height - FLOOR_HEIGHT - this.height;
+        this.y = Math.random() > 0.5
+            ? canvas.height - FLOOR_HEIGHT - this.height // On the floor
+            : Math.random() * (canvas.height - FLOOR_HEIGHT - this.height - 50); // Flying at a random height above the floor
+        this.bodyColor = CAR_BODY_COLORS[Math.floor(Math.random() * CAR_BODY_COLORS.length)]; // Random car body color
     }
 
     draw() {
-        ctx.fillStyle = '#FF0000'; // Red for enemy
+        // Draw car body
+        ctx.fillStyle = this.bodyColor;
         ctx.fillRect(this.x, this.y, this.width, this.height);
+
+        // Draw car wheels
+        ctx.fillStyle = COLORS.WHEEL_COLOR;
+        // Front wheel
+        ctx.beginPath();
+        ctx.arc(this.x + 10, this.y + this.height, this.wheelRadius, 0, Math.PI * 2);
+        ctx.fill();
+        // Rear wheel
+        ctx.beginPath();
+        ctx.arc(this.x + this.width - 10, this.y + this.height, this.wheelRadius, 0, Math.PI * 2);
+        ctx.fill();
     }
 
     update() {
@@ -146,8 +176,10 @@ setInterval(() => {
     }
 }, 1500); // Spawn enemies every 1.5 seconds
 
-// Input handling
+// Input handling for movement
 document.addEventListener('keydown', (event) => {
+    keysPressed[event.key] = true;
+
     if (event.code === 'Space') {
         player.jump();
     }
@@ -155,6 +187,10 @@ document.addEventListener('keydown', (event) => {
     if (event.code === 'KeyR' && gameOver) {
         resetGame();
     }
+});
+
+document.addEventListener('keyup', (event) => {
+    keysPressed[event.key] = false;
 });
 
 gameLoop();
