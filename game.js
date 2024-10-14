@@ -1,85 +1,79 @@
-// Initialize the canvas and its context
+// Select the canvas and set up the context
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-// Set canvas dimensions
-canvas.width = 800;
-canvas.height = 600;
+// Set canvas size
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-// Define constants and variables
+// Constants and global variables
 const FLOOR_HEIGHT = 50;
-const GAME_SPEED = 2;
+const PLAYER_WIDTH = 50;
+const PLAYER_HEIGHT = 50;
+const GRAVITY = 0.8;
+const JUMP_STRENGTH = 15;
 const PLAYER_SPEED = 5;
-const JUMP_FORCE = 15;
-const GRAVITY = 0.7;
-const COLORS = {
-    BROWN_FLOOR: '#8B4513',
-    BLACK: '#000000'
-};
+const GAME_SPEED = 3;
+
+let gameOver = false;
+let score = 0;
 
 // Load the player image
 const playerImage = new Image();
-playerImage.src = 'path/to/player-image.png';  // Replace with your image path
+playerImage.src = 'path/to/player-image.png'; // Replace with the actual image path
 
-// Initialize player with basic physics
+// Define the player object with movement controls and jumping
 const player = {
     x: 100,
-    y: canvas.height - FLOOR_HEIGHT - 100,
-    width: 50,
-    height: 50,
-    velocityY: 0, // vertical speed for jumping
+    y: canvas.height - FLOOR_HEIGHT - PLAYER_HEIGHT,
+    width: PLAYER_WIDTH,
+    height: PLAYER_HEIGHT,
+    velocityY: 0,
     isJumping: false,
-    isOnGround: false,
+    isOnGround: true,
+
     draw: function() {
         ctx.drawImage(playerImage, this.x, this.y, this.width, this.height); // Draw player as an image
     },
     update: function() {
-        // Apply gravity
+        // Gravity effect
         this.y += this.velocityY;
         this.velocityY += GRAVITY;
 
-        // Prevent falling below the floor
+        // Stop the player from falling below the floor
         if (this.y + this.height > canvas.height - FLOOR_HEIGHT) {
             this.y = canvas.height - FLOOR_HEIGHT - this.height;
             this.isOnGround = true;
-            this.isJumping = false;
+            this.velocityY = 0;
         } else {
             this.isOnGround = false;
         }
+    },
+    jump: function() {
+        if (this.isOnGround) {
+            this.velocityY = -JUMP_STRENGTH;
+            this.isJumping = true;
+            this.isOnGround = false;
+        }
+    },
+    moveLeft: function() {
+        this.x -= PLAYER_SPEED;
+        if (this.x < 0) this.x = 0; // Keep player within bounds
+    },
+    moveRight: function() {
+        this.x += PLAYER_SPEED;
+        if (this.x + this.width > canvas.width) this.x = canvas.width - this.width; // Keep player within bounds
     }
 };
 
-// Initialize control variables for movement
-let keys = {
-    ArrowLeft: false,
-    ArrowRight: false,
-    Space: false
-};
-
-// Listen for key presses
-window.addEventListener('keydown', function(e) {
+// Handle player movement with keyboard events
+let keys = {};
+window.addEventListener('keydown', (e) => {
     keys[e.code] = true;
 });
-
-window.addEventListener('keyup', function(e) {
+window.addEventListener('keyup', (e) => {
     keys[e.code] = false;
 });
-
-// Handle player movement
-function handlePlayerMovement() {
-    if (keys.ArrowLeft) {
-        player.x -= PLAYER_SPEED; // Move left
-        if (player.x < 0) player.x = 0; // Prevent moving out of bounds
-    }
-    if (keys.ArrowRight) {
-        player.x += PLAYER_SPEED; // Move right
-        if (player.x + player.width > canvas.width) player.x = canvas.width - player.width; // Prevent moving out of bounds
-    }
-    if (keys.Space && !player.isJumping) {
-        player.velocityY = -JUMP_FORCE; // Jump
-        player.isJumping = true;
-    }
-}
 
 // Enemy class
 class Enemy {
@@ -98,7 +92,7 @@ class Enemy {
     }
 }
 
-// Candy class
+// Candy class (for bonus items)
 class Candy {
     constructor() {
         this.size = 20;
@@ -116,19 +110,9 @@ class Candy {
     }
 }
 
-// Initialize variables
+// Game variables
 let enemies = [];
 let candies = [];
-let gameOver = false;
-let score = 0;
-
-// Collision detection (basic AABB)
-function collisionDetection(rect1, rect2) {
-    return rect1.x < rect2.x + rect2.width &&
-           rect1.x + rect1.width > rect2.x &&
-           rect1.y < rect2.y + rect2.height &&
-           rect1.y + rect1.height > rect2.y;
-}
 
 // Main game loop
 function gameLoop() {
@@ -137,34 +121,34 @@ function gameLoop() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         // Draw floor
-        ctx.fillStyle = COLORS.BROWN_FLOOR;
+        ctx.fillStyle = '#8B4513'; // Brown color for the floor
         ctx.fillRect(0, canvas.height - FLOOR_HEIGHT, canvas.width, FLOOR_HEIGHT);
 
-        // Draw and update player
-        handlePlayerMovement();
+        // Handle player movement
+        if (keys['ArrowLeft']) player.moveLeft();
+        if (keys['ArrowRight']) player.moveRight();
+        if (keys['Space']) player.jump();
+
+        // Update and draw player
         player.update();
         player.draw();
 
-        // Draw and update enemies
+        // Update and draw enemies
         enemies.forEach((enemy, index) => {
-            enemy.draw();
             enemy.update();
-
-            // Collision detection with enemies
+            enemy.draw();
             if (collisionDetection(player, enemy)) {
                 gameOver = true;
                 document.getElementById('gameOverMessage').style.display = 'block';
             }
         });
 
-        // Draw and update candies
+        // Update and draw candies
         candies.forEach((candy, index) => {
-            candy.draw();
             candy.update();
-
-            // Collision detection with candies
-            if (collisionDetection(player, {x: candy.x, y: candy.y, width: candy.size, height: candy.size})) {
-                score += 10; // Increase score by 10
+            candy.draw();
+            if (collisionDetection(player, candy)) {
+                score += 10;
                 candies.splice(index, 1); // Remove candy after collision
             }
         });
@@ -174,7 +158,7 @@ function gameLoop() {
         candies = candies.filter(candy => candy.x + candy.size > 0);
 
         // Draw score
-        ctx.fillStyle = COLORS.BLACK;
+        ctx.fillStyle = '#000000'; // Black color for text
         ctx.font = '20px Arial';
         ctx.fillText(`Score: ${score}`, 10, 30);
 
@@ -182,19 +166,27 @@ function gameLoop() {
     }
 }
 
-// Spawn enemies every 1.5 seconds
+// Collision detection (basic AABB - Axis-Aligned Bounding Box)
+function collisionDetection(rect1, rect2) {
+    return rect1.x < rect2.x + rect2.width &&
+           rect1.x + rect1.width > rect2.x &&
+           rect1.y < rect2.y + rect2.height &&
+           rect1.y + rect1.height > rect2.y;
+}
+
+// Spawn enemies every 2 seconds
 setInterval(() => {
     if (!gameOver) {
         enemies.push(new Enemy());
     }
-}, 1500);
+}, 2000);
 
-// Spawn candies every 2 seconds
+// Spawn candies every 3 seconds
 setInterval(() => {
     if (!gameOver) {
         candies.push(new Candy());
     }
-}, 2000);
+}, 3000);
 
 // Start the game loop
 window.onload = () => {

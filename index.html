@@ -8,14 +8,12 @@
         body {
             margin: 0;
             overflow: hidden;
-            background-color: #87CEEB; /* Blue sky */
+            background-color: #87CEEB; /* Sky blue background */
         }
-
         canvas {
             display: block;
         }
-
-        .game-over, .victory {
+        .game-over {
             position: absolute;
             top: 50%;
             left: 50%;
@@ -23,14 +21,15 @@
             font-size: 32px;
             color: black;
             font-family: sans-serif;
+            display: none;
         }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas"></canvas>
-    <div class="game-over" id="gameOverMessage" style="display: none;">Game Over! Press R to Restart.</div>
-    <div class="victory" id="victoryMessage" style="display: none;"></div>
+    <div class="game-over" id="gameOverMessage">Game Over! Press R to Restart.</div>
 
+    <!-- JavaScript File -->
     <script src="game.js"></script>
 </body>
 </html>
