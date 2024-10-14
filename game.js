@@ -67,6 +67,7 @@ function addObstacle() {
             ctx.fillRect(this.x, this.y, this.width, this.height);
         }
     });
+    console.log('Obstacle added:', obstacles.length);
 }
 
 // Function to add candy
@@ -88,6 +89,7 @@ function addCandy() {
             ctx.fillRect(this.x, this.y, this.size, this.size);
         }
     });
+    console.log('Candy added:', candies.length);
 }
 
 // Draw floor
