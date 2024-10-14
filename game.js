@@ -11,37 +11,38 @@ const GAME_SPEED = 5;
 const COLORS = {
     BLUE_SKY: '#87CEEB',
     BROWN_FLOOR: '#8B4513',
-    GREEN_PLAYER: '#00FF00',
-    RED_ENEMY: '#FF0000',
-    PURPLE_THORN: '#800080',
-    GOLD_COIN: '#FFD700',
-    WHITE_CLOUD: '#FFFFFF',
     BLACK: '#000000'
 };
 
 // Variables
 let player = null;
 let enemies = [];
-let thorns = [];
-let coins = [];
-let clouds = [];
 let gameOver = false;
 let score = 0;
 let jumpCount = 0;
 
+// Load character image
+const playerImage = new Image();
+playerImage.src = 'head.png'; // Provide the correct path to the player image
+
 // Game Objects
 class Player {
     constructor() {
-        this.width = 30;
-        this.height = 50;
+        this.width = 115;
+        this.height = 153;
         this.x = 50;
         this.y = canvas.height - FLOOR_HEIGHT - this.height;
         this.dy = 0;
     }
 
     draw() {
-        ctx.fillStyle = COLORS.GREEN_PLAYER;
-        ctx.fillRect(this.x, this.y, this.width, this.height);
+        if (playerImage.complete) {
+            ctx.drawImage(playerImage, this.x, this.y, this.width, this.height);
+        } else {
+            playerImage.onload = () => {
+                ctx.drawImage(playerImage, this.x, this.y, this.width, this.height);
+            };
+        }
     }
 
     update() {
@@ -72,7 +73,7 @@ class Enemy {
     }
 
     draw() {
-        ctx.fillStyle = COLORS.RED_ENEMY;
+        ctx.fillStyle = '#FF0000'; // Red for enemy
         ctx.fillRect(this.x, this.y, this.width, this.height);
     }
 
@@ -80,8 +81,6 @@ class Enemy {
         this.x -= GAME_SPEED;
     }
 }
-
-// Other objects (thorn, coin, cloud) would have similar structure to Enemy
 
 // Game Loop
 function gameLoop() {
