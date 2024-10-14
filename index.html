@@ -4,32 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Side-Scrolling Blob Game</title>
-    <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            background-color: #87CEEB; /* Sky blue background */
-        }
-        canvas {
-            display: block;
-        }
-        .game-over {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 32px;
-            color: black;
-            font-family: sans-serif;
-            display: none;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <canvas id="gameCanvas"></canvas>
-    <div class="game-over" id="gameOverMessage">Game Over! Press R to Restart.</div>
+    <div id="score">Score: 0</div>
+    <div id="game-over">Game Over! Press R to Restart</div>
 
-    <!-- JavaScript File -->
-    <script src="game.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
