@@ -15,6 +15,29 @@
             display: block;
         }
 
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+
+        .button {
+            background-color: #555;
+            color: white;
+            padding: 15px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .button:active {
+            background-color: #333;
+        }
+
         .game-over, .victory {
             position: absolute;
             top: 50%;
@@ -28,8 +51,16 @@
 </head>
 <body>
     <canvas id="gameCanvas"></canvas>
-    <div class="game-over" id="gameOverMessage" style="display: none;">Game Over! Press R to Restart.</div>
-    <div class="victory" id="victoryMessage" style="display: none;"></div>
+    <div class="game-over" id="gameOverMessage" style="display: none;">Game Over! Press Restart.</div>
+    <div class="controls">
+        <button class="button" id="leftButton">←</button>
+        <button class="button" id="upButton">↑</button>
+        <button class="button" id="downButton">↓</button>
+        <button class="button" id="rightButton">→</button>
+        <button class="button" id="jumpButton">Jump</button>
+        <button class="button" id="restartButton">Restart</button>
+        <button class="button" id="speedButton">Speed +</button>
+    </div>
 
     <script src="game.js"></script>
 </body>

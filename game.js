@@ -7,7 +7,7 @@ canvas.height = 400;
 const FLOOR_HEIGHT = 50;
 const GRAVITY = 0.5;
 const PLAYER_JUMP_VELOCITY = -12;
-const GAME_SPEED = 5;
+let GAME_SPEED = 5;
 const COLORS = {
     BLUE_SKY: '#87CEEB',
     BROWN_FLOOR: '#8B4513',
@@ -53,14 +53,6 @@ class Player {
         this.dy += GRAVITY;
         this.y += this.dy;
 
-        // Movement logic for left and right
-        if (keysPressed['ArrowLeft'] && this.x > 0) {
-            this.x -= this.speed;
-        }
-        if (keysPressed['ArrowRight'] && this.x < canvas.width - this.width) {
-            this.x += this.speed;
-        }
-
         // Prevent player from falling below the floor
         if (this.y + this.height >= canvas.height - FLOOR_HEIGHT) {
             this.y = canvas.height - FLOOR_HEIGHT - this.height;
@@ -75,6 +67,22 @@ class Player {
             jumpCount += 1;
         }
     }
+
+    moveLeft() {
+        this.x = Math.max(0, this.x - this.speed);
+    }
+
+    moveRight() {
+        this.x = Math.min(canvas.width - this.width, this.x + this.speed);
+    }
+
+    moveUp() {
+        this.y = Math.max(0, this.y - this.speed);
+    }
+
+    moveDown() {
+        this.y = Math.min(canvas.height - FLOOR_HEIGHT - this.height, this.y + this.speed);
+    }
 }
 
 // Car-shaped enemy class
@@ -84,6 +92,7 @@ class Enemy {
         this.height = 30; // Car body height
         this.wheelRadius = 10; // Wheel radius
         this.x = canvas.width;
+        // Randomly position the enemy on the y-axis, above the floor or flying in the air
         this.y = Math.random() > 0.5
             ? canvas.height - FLOOR_HEIGHT - this.height // On the floor
             : Math.random() * (canvas.height - FLOOR_HEIGHT - this.height - 50); // Flying at a random height above the floor
@@ -168,6 +177,11 @@ function resetGame() {
     gameLoop();
 }
 
+// Increase game speed
+function increaseSpeed() {
+    GAME_SPEED += 1;
+}
+
 // Start game
 player = new Player();
 setInterval(() => {
@@ -176,21 +190,13 @@ setInterval(() => {
     }
 }, 1500); // Spawn enemies every 1.5 seconds
 
-// Input handling for movement
-document.addEventListener('keydown', (event) => {
-    keysPressed[event.key] = true;
-
-    if (event.code === 'Space') {
-        player.jump();
-    }
-
-    if (event.code === 'KeyR' && gameOver) {
-        resetGame();
-    }
-});
-
-document.addEventListener('keyup', (event) => {
-    keysPressed[event.key] = false;
-});
+// Button event listeners
+document.getElementById('leftButton').addEventListener('click', () => player.moveLeft());
+document.getElementById('rightButton').addEventListener('click', () => player.moveRight());
+document.getElementById('upButton').addEventListener('click', () => player.moveUp());
+document.getElementById('downButton').addEventListener('click', () => player.moveDown());
+document.getElementById('jumpButton').addEventListener('click', () => player.jump());
+document.getElementById('restartButton').addEventListener('click', resetGame);
+document.getElementById('speedButton').addEventListener('click', increaseSpeed);
 
 gameLoop();
